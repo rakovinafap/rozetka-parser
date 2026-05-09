@@ -227,7 +227,7 @@ const app = express()
 app.use(express.json())
 
 // Тимчасовий тестовий ендпоінт
-app.get('/api/test', (req, res) => {
+app.get('/test', (req, res) => {
   res.json({ message: 'API is working!', timestamp: new Date().toISOString() })
 })
 
@@ -235,7 +235,7 @@ app.post('/api/parse', (req, res) => {
   res.json({ message: 'Parse endpoint received', body: req.body })
 })
 
-app.post('/api/contact', (req, res) => {
+app.post('/contact', (req, res) => {
   res.json({ message: 'Contact endpoint received', body: req.body })
 })
 
