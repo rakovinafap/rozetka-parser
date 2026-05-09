@@ -228,28 +228,14 @@ module.exports = serverless(app)
 } */
 
 module.exports = async (req, res) => {
-  try {
-    const url = req.body?.url
+  console.log('========== NEW REQUEST ==========')
+  console.log('HEADERS:', req.headers)
+  console.log('BODY RAW:', req.body)
+  console.log('TYPE:', typeof req.body)
 
-    const axios = require('axios')
-
-    const r = await axios.get(url, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0'
-      }
-    })
-
-    return res.json({
-      ok: true,
-      status: r.status,
-      htmlPreview: r.data.slice(0, 200)
-    })
-
-  } catch (e) {
-    return res.status(500).json({
-      error: e.message,
-      stack: e.stack
-    })
-  }
+  return res.status(200).json({
+    debug: true,
+    body: req.body,
+    type: typeof req.body
+  })
 }
