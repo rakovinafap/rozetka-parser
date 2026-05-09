@@ -220,9 +220,117 @@ module.exports = serverless(app)
 
  */
 
-module.exports = async (req, res) => {
+/* module.exports = async (req, res) => {
   return res.status(200).json({
     success: true,
     message: 'VERCEL API WORKS'
   })
+} */
+
+  const axios = require('axios')
+const cheerio = require('cheerio')
+
+module.exports = async (req, res) => {
+  // только POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  try {
+    const { url } = req.body
+    console.log('URL:', url)
+
+    const { data } = await axios.get(url, {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
+      }
+    })
+
+    const $ = cheerio.load(data)
+
+    const title = $('h1').first().text().trim()
+    const price = $('.product-price__big').first().text().trim().slice(0, -1)
+    const oldPrice = $('.product-price__small').first().text().trim()
+
+    const category = $('[data-testid="crumb_item"]')
+      .eq(-2)
+      .text()
+      .replace(/\//g, '')
+      .trim()
+
+    // vendor
+    const producerBlock = $('rz-product-producer').first()
+
+    let vendor = ''
+    if (producerBlock.length) {
+      vendor = producerBlock.find('strong').text().trim()
+
+      if (!vendor) {
+        const fullText = producerBlock.text()
+        const match = fullText.match(/Усі товари бренду\s+(.+?)(?:\s*$|\.)/)
+        vendor = match ? match[1].trim() : ''
+      }
+    }
+
+    // images
+    const images = []
+
+    $('.thumbnail-button__picture').each((i, el) => {
+      const src = $(el).attr('src')
+
+      if (
+        src &&
+        !src.includes('placeholder') &&
+        !src.includes('1x1') &&
+        !src.startsWith('data:')
+      ) {
+        images.push(src.replace('/medium/', '/original/'))
+      }
+    })
+
+    // params
+    const params = []
+
+    $('.group .item').each((i, el) => {
+      const label = $(el).find('dt.label').text().trim()
+
+      let values = []
+
+      $(el).find('dd.value li').each((i, li) => {
+        const text = $(li).text().trim()
+        if (text) values.push(text)
+      })
+
+      if (!values.length) {
+        const raw = $(el).find('dd.value').text().trim()
+        if (raw) values.push(raw)
+      }
+
+      if (label && values.length) {
+        params.push({
+          label,
+          value: values.join(', ')
+        })
+      }
+    })
+
+    return res.status(200).json({
+      title,
+      price,
+      oldPrice,
+      category,
+      vendor,
+      images,
+      params
+    })
+
+  } catch (e) {
+    console.log('ERROR:', e.message)
+
+    return res.status(500).json({
+      error: e.message
+    })
+  }
 }
