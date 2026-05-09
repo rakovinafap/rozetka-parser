@@ -56,7 +56,7 @@ const fetchData = async () => {
   const nextId = String(Number(settings.offerId) + 1)
   
   try {
-    const res = await fetch('/parse', {
+    const res = await fetch('/api/parse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url })
