@@ -251,12 +251,16 @@ module.exports = async (req, res) => {
     })
 
   } catch (e) {
-    return res.status(500).json({
-      success: false,
-      message: e.message,
-      code: e.code,
-      responseStatus: e.response?.status,
-      responseData: e.response?.data
-    })
-  }
+  return res.status(500).json({
+    success: false,
+    message: e.message,
+    code: e.code,
+    status: e.response?.status,
+    headers: e.response?.headers,
+    data:
+      typeof e.response?.data === 'string'
+        ? e.response.data.slice(0, 3000)
+        : e.response?.data
+  })
+}
 }
