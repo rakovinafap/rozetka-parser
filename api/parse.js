@@ -12,8 +12,13 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.get('/test', (req, res) => {
-  res.json({ ok: true })
+app.post('/', async (req, res) => {
+  console.log('POST HIT')
+
+  return res.json({
+    success: true,
+    test: 'WORKING'
+  })
 })
 
 const transporter = nodemailer.createTransport({
