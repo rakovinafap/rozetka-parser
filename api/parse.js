@@ -5,6 +5,8 @@ const cors = require('cors')
 const nodemailer = require('nodemailer')
 const app = express()
 
+
+
 require('dotenv').config()
 
 app.use(cors())
@@ -51,7 +53,7 @@ function cleanHTML(html = '') {
   return $('body').html()?.trim() || ''
 }
 
-app.post('/parse', async (req, res) => {
+app.post('/', async (req, res) => {
   try {
     const { url } = req.body
     console.log('URL:', url)
@@ -217,7 +219,7 @@ app.post('/contact', async (req, res) => {
     }
 })
 
+const serverless = require('serverless-http')
 
-
-module.exports = app;
+module.exports = serverless(app)
 
