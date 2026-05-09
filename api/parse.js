@@ -231,13 +231,21 @@ module.exports = serverless(app)
 const cheerio = require('cheerio')
 
 module.exports = async (req, res) => {
-  // только POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
   try {
-    const { url } = req.body
+    let body = req.body
+
+    if (typeof body === 'string') {
+      body = JSON.parse(body)
+    }
+
+    const { url } = body || {}
+console.log('BODY:', req.body)
+    if (!url) {
+      return res.status(400).json({
+        error: 'No URL provided'
+      })
+    }
+    const { url } = body || {}
     console.log('URL:', url)
 
     const { data } = await axios.get(url, {
