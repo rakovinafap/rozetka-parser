@@ -266,24 +266,39 @@ module.exports = async (req, res) => {
     // ======================
     let data
 
-    try {
-      const response = await axios.get(url, {
-        timeout: 15000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
-        }
-      })
+try {
+  console.log('FETCHING:', url)
 
-      data = response.data
-    } catch (err) {
-      console.log('AXIOS ERROR:', err.message)
-
-      return res.status(500).json({
-        error: 'Failed to fetch page',
-        details: err.message
-      })
+  const response = await axios.get(url, {
+    timeout: 15000,
+    maxRedirects: 5,
+    validateStatus: () => true, // 👈 ВАЖНО
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
     }
+  })
+
+  console.log('STATUS FROM ROZETKA:', response.status)
+
+  if (response.status !== 200) {
+    return res.status(500).json({
+      error: 'Blocked or bad response',
+      status: response.status,
+      preview: String(response.data).slice(0, 200)
+    })
+  }
+
+  data = response.data
+
+} catch (err) {
+  console.log('AXIOS FULL ERROR:', err)
+
+  return res.status(500).json({
+    error: 'Axios failed',
+    message: err.message
+  })
+}
 
     const $ = cheerio.load(data)
 
