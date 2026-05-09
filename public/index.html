@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Parser</title>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+const e = React.createElement
+
+function App() {
+  const [url, setUrl] = React.useState('')
+  const [data, setData] = React.useState(null)
+
+  const fetchData = async () => {
+    const res = await fetch('/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    })
+    const json = await res.json()
+    setData(json)
+  }
+
+  const xml = data ? `
+    <product>
+    <title>${data.title}</title>
+    <price>${data.price}</price>
+    <category>${data.category}</category>
+    <description>${data.description}</description>
+    <images>
+        ${data.images.map(i => `<img>${i}</img>`).join('')}
+    </images>
+    </product>` : ''
+
+  return e('div', { style: { padding: '20px', fontFamily: 'Arial' } }, [
+
+    e('h2', {}, 'Rozetka Parser'),
+
+    e('input', {
+      value: url,
+      onChange: ev => setUrl(ev.target.value),
+      placeholder: 'Ссылка на товар',
+      style: { width: '400px' }
+    }),
+
+    e('button', { onClick: fetchData }, 'Парсить'),
+
+    data && e('div', { style: { display: 'flex', marginTop: '20px', gap: '20px' } }, [
+
+      // XML
+      e('textarea', {
+        value: xml,
+        readOnly: true,
+        style: { width: '33%', height: '400px' }
+      }),
+
+      // Визуал
+      e('div', { style: { width: '33%' } }, [
+        e('h3', {}, data.title),
+        e('p', {}, data.price),
+        e('p', {}, data.category),
+        e('div', {}, data.images.map(src =>
+          e('img', { src, width: 100 })
+        ))
+      ]),
+
+      // Редактор
+      e('div', { style: { width: '33%' } }, [
+        e('input', {
+          value: data.title,
+          onChange: ev => setData({ ...data, title: ev.target.value })
+        }),
+        e('input', {
+          value: data.price,
+          onChange: ev => setData({ ...data, price: ev.target.value })
+        }),
+        e('textarea', {
+          value: data.description,
+          onChange: ev => setData({ ...data, description: ev.target.value })
+        })
+      ])
+
+    ])
+  ])
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App))
+</script>
+</body>
+</html>
