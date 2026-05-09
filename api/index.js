@@ -212,5 +212,5 @@ app.post('/contact', async (req, res) => {
     }
 })
 
-/* app.listen(3000, () => console.log('API http://localhost:3000')) */
+
 module.exports = app;
