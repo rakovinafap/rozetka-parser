@@ -226,14 +226,30 @@ module.exports = serverless(app)
     message: 'VERCEL API WORKS'
   })
 } */
-module.exports = async (req, res) => {
-  console.log('🔥 HIT /api/parse')
-  console.log('METHOD:', req.method)
-  console.log('BODY:', req.body)
 
-  return res.status(200).json({
-    ok: true,
-    message: 'endpoint works',
-    body: req.body || null
-  })
+module.exports = async (req, res) => {
+  try {
+    const url = req.body?.url
+
+    const axios = require('axios')
+
+    const r = await axios.get(url, {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }
+    })
+
+    return res.json({
+      ok: true,
+      status: r.status,
+      htmlPreview: r.data.slice(0, 200)
+    })
+
+  } catch (e) {
+    return res.status(500).json({
+      error: e.message,
+      stack: e.stack
+    })
+  }
 }
