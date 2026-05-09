@@ -3,10 +3,14 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      external: []  // Додайте цей рядок
+    }
+  },
   server: {
     proxy: {
-      '/parse': 'http://localhost:3000',
-      '/contact': 'http://localhost:3000'
+      '/api': 'http://localhost:3000'
     }
   }
 })
