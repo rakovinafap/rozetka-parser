@@ -7,7 +7,7 @@ const app = express()
 
 
 
-require('dotenv').config()
+/* require('dotenv').config() */
 
 app.use(cors())
 app.use(express.json())
@@ -53,7 +53,7 @@ function cleanHTML(html = '') {
   return $('body').html()?.trim() || ''
 }
 
-app.post('/', async (req, res) => {
+app.post('/parse', async (req, res) => {
   try {
     const { url } = req.body
     console.log('URL:', url)
