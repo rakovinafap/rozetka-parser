@@ -226,28 +226,50 @@ module.exports = serverless(app)
     message: 'VERCEL API WORKS'
   })
 } */
-
-  const axios = require('axios')
+const axios = require('axios')
 const cheerio = require('cheerio')
 
 module.exports = async (req, res) => {
   try {
-    let body = req.body
+    console.log('METHOD:', req.method)
+    console.log('RAW BODY:', req.body)
 
-    if (typeof body === 'string') {
-      body = JSON.parse(body)
+    if (req.method !== 'POST') {
+      return res.status(405).json({
+        error: 'Method not allowed'
+      })
     }
 
-    const { url } = body || {}
-console.log('BODY:', req.body)
+    // =========================
+    // SAFE BODY PARSING
+    // =========================
+    let body = req.body
+
+    if (!body) body = {}
+
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body)
+      } catch (e) {
+        return res.status(400).json({
+          error: 'Invalid JSON body'
+        })
+      }
+    }
+
+    const url = body.url
+
+    console.log('PARSED URL:', url)
+
     if (!url) {
       return res.status(400).json({
         error: 'No URL provided'
       })
     }
-    const { url } = body || {}
-    console.log('URL:', url)
 
+    // =========================
+    // REQUEST TO ROZETKA
+    // =========================
     const { data } = await axios.get(url, {
       timeout: 15000,
       headers: {
@@ -258,9 +280,21 @@ console.log('BODY:', req.body)
 
     const $ = cheerio.load(data)
 
+    // =========================
+    // MAIN FIELDS
+    // =========================
     const title = $('h1').first().text().trim()
-    const price = $('.product-price__big').first().text().trim().slice(0, -1)
-    const oldPrice = $('.product-price__small').first().text().trim()
+
+    const price = $('.product-price__big')
+      .first()
+      .text()
+      .trim()
+      .slice(0, -1)
+
+    const oldPrice = $('.product-price__small')
+      .first()
+      .text()
+      .trim()
 
     const category = $('[data-testid="crumb_item"]')
       .eq(-2)
@@ -268,10 +302,13 @@ console.log('BODY:', req.body)
       .replace(/\//g, '')
       .trim()
 
-    // vendor
+    // =========================
+    // VENDOR
+    // =========================
     const producerBlock = $('rz-product-producer').first()
 
     let vendor = ''
+
     if (producerBlock.length) {
       vendor = producerBlock.find('strong').text().trim()
 
@@ -282,10 +319,12 @@ console.log('BODY:', req.body)
       }
     }
 
-    // images
+    // =========================
+    // IMAGES
+    // =========================
     const images = []
 
-    $('.thumbnail-button__picture').each((i, el) => {
+    $('.thumbnail-button__picture').each((_, el) => {
       const src = $(el).attr('src')
 
       if (
@@ -298,15 +337,17 @@ console.log('BODY:', req.body)
       }
     })
 
-    // params
+    // =========================
+    // PARAMETERS
+    // =========================
     const params = []
 
-    $('.group .item').each((i, el) => {
+    $('.group .item').each((_, el) => {
       const label = $(el).find('dt.label').text().trim()
 
       let values = []
 
-      $(el).find('dd.value li').each((i, li) => {
+      $(el).find('dd.value li').each((_, li) => {
         const text = $(li).text().trim()
         if (text) values.push(text)
       })
@@ -324,6 +365,9 @@ console.log('BODY:', req.body)
       }
     })
 
+    // =========================
+    // RESPONSE
+    // =========================
     return res.status(200).json({
       title,
       price,
