@@ -10,6 +10,10 @@ require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 
+app.get('/test', (req, res) => {
+  res.json({ ok: true })
+})
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -89,6 +93,7 @@ app.post('/parse', async (req, res) => {
 
   
     // Найпростіший спосіб - взяти весь текст з блоку опису
+    let rawDescription = ''
     const descriptionBlock = $('#description')
     if (descriptionBlock.length) {
       // Видаляємо зайві блоки (кнопки, навігацію)
