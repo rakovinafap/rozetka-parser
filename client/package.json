@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "nodemailer": "^8.0.7",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "highlight.js": "^11.11.1"
