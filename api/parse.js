@@ -231,29 +231,32 @@ const axios = require('axios')
 
 module.exports = async (req, res) => {
   try {
-    const { url } = req.body
-
-    console.log('FETCH:', url)
-
-    const response = await axios.get(url, {
-      timeout: 15000,
-      validateStatus: () => true,
-      headers: {
-        'User-Agent': 'Mozilla/5.0'
+    const response = await axios.get(
+      'https://hard.rozetka.com.ua/ua/427509161/p427509161/',
+      {
+        timeout: 15000,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/147.0.0.0 Safari/537.36',
+          'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
+        }
       }
-    })
+    )
 
     return res.status(200).json({
       success: true,
       status: response.status,
-      preview: String(response.data).slice(0, 500)
+      length: response.data.length,
+      preview: response.data.slice(0, 500)
     })
 
   } catch (e) {
     return res.status(500).json({
-      error: e.message,
+      success: false,
+      message: e.message,
       code: e.code,
-      stack: e.stack
+      responseStatus: e.response?.status,
+      responseData: e.response?.data
     })
   }
 }
