@@ -54,6 +54,7 @@ function cleanHTML(html = '') {
 }
 
 app.post('/parse', async (req, res) => {
+    console.log('POST HIT')
   try {
     const { url } = req.body
     console.log('URL:', url)
