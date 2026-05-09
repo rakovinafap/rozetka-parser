@@ -1,4 +1,4 @@
-/* const express = require('express')
+const express = require('express')
 const axios = require('axios')
 const cheerio = require('cheerio')
 const cors = require('cors')
@@ -219,24 +219,5 @@ app.post('/contact', async (req, res) => {
 
 
 
-module.exports = app; */
+module.exports = app;
 
-const express = require('express')
-const app = express()
-
-app.use(express.json())
-
-// Тимчасовий тестовий ендпоінт
-app.get('/test', (req, res) => {
-  res.json({ message: 'API is working!', timestamp: new Date().toISOString() })
-})
-
-app.post('/api/parse', (req, res) => {
-  res.json({ message: 'Parse endpoint received', body: req.body })
-})
-
-app.post('/contact', (req, res) => {
-  res.json({ message: 'Contact endpoint received', body: req.body })
-})
-
-module.exports = app
