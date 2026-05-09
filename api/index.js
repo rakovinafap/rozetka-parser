@@ -10,7 +10,7 @@ require('dotenv').config()
 app.use(cors())
 app.use(express.json())
 
-app.get('/test', (req, res) => {
+app.get('api/test', (req, res) => {
   res.json({ ok: true })
 })
 
@@ -51,7 +51,7 @@ function cleanHTML(html = '') {
   return $('body').html()?.trim() || ''
 }
 
-app.post('/parse', async (req, res) => {
+app.post('api/parse', async (req, res) => {
   try {
     const { url } = req.body
     console.log('URL:', url)
@@ -182,7 +182,7 @@ $('.thumbnail-button__picture').each((i, el) => {
     }
 })
 
-app.post('/contact', async (req, res) => {
+app.post('api/contact', async (req, res) => {
   try {
     const { email, message } = req.body
 
