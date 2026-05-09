@@ -1,4 +1,4 @@
-const express = require('express')
+/* const express = require('express')
 const axios = require('axios')
 const cheerio = require('cheerio')
 const cors = require('cors')
@@ -178,7 +178,7 @@ $('.thumbnail-button__picture').each((i, el) => {
     res.status(500).json({ error: e.message })
     }
 })
-/* 
+
 app.post('/contact', async (req, res) => {
   try {
     const { email, message } = req.body
@@ -213,8 +213,16 @@ app.post('/contact', async (req, res) => {
           })
     }
 })
- */
+
 const serverless = require('serverless-http')
 
 module.exports = serverless(app)
 
+ */
+
+module.exports = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'VERCEL API WORKS'
+  })
+}
