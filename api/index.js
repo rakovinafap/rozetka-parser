@@ -217,5 +217,10 @@ app.post('/contact', async (req, res) => {
     }
 })
 
+export default function handler(req, res) {
+  res.status(200).json({
+    hello: 'world'
+  })
+}
 
-module.exports = app;
+export default app
