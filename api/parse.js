@@ -232,69 +232,64 @@ const cheerio = require('cheerio')
 module.exports = async (req, res) => {
   try {
     console.log('METHOD:', req.method)
-    console.log('RAW BODY:', req.body)
 
     if (req.method !== 'POST') {
-      return res.status(405).json({
-        error: 'Method not allowed'
+      return res.status(405).json({ error: 'Only POST allowed' })
+    }
+
+    // ======================
+    // SAFE BODY PARSING (Vercel fix)
+    // ======================
+    let body = {}
+
+    try {
+      if (req.body) {
+        body = typeof req.body === 'string'
+          ? JSON.parse(req.body)
+          : req.body
+      }
+    } catch (e) {
+      console.log('BODY PARSE ERROR:', e.message)
+      return res.status(400).json({ error: 'Invalid JSON' })
+    }
+
+    const url = body?.url
+
+    console.log('URL RECEIVED:', url)
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'URL is required' })
+    }
+
+    // ======================
+    // AXIOS SAFETY LAYER
+    // ======================
+    let data
+
+    try {
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
+        }
+      })
+
+      data = response.data
+    } catch (err) {
+      console.log('AXIOS ERROR:', err.message)
+
+      return res.status(500).json({
+        error: 'Failed to fetch page',
+        details: err.message
       })
     }
-
-    // =========================
-    // SAFE BODY PARSING
-    // =========================
-    let body = req.body
-
-    if (!body) body = {}
-
-    if (typeof body === 'string') {
-      try {
-        body = JSON.parse(body)
-      } catch (e) {
-        return res.status(400).json({
-          error: 'Invalid JSON body'
-        })
-      }
-    }
-
-    const url = body.url
-
-    console.log('PARSED URL:', url)
-
-    if (!url) {
-      return res.status(400).json({
-        error: 'No URL provided'
-      })
-    }
-
-    // =========================
-    // REQUEST TO ROZETKA
-    // =========================
-    const { data } = await axios.get(url, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'Accept-Language': 'uk-UA,uk;q=0.9,en;q=0.8'
-      }
-    })
 
     const $ = cheerio.load(data)
 
-    // =========================
-    // MAIN FIELDS
-    // =========================
     const title = $('h1').first().text().trim()
-
-    const price = $('.product-price__big')
-      .first()
-      .text()
-      .trim()
-      .slice(0, -1)
-
-    const oldPrice = $('.product-price__small')
-      .first()
-      .text()
-      .trim()
+    const price = $('.product-price__big').first().text().trim().slice(0, -1)
+    const oldPrice = $('.product-price__small').first().text().trim()
 
     const category = $('[data-testid="crumb_item"]')
       .eq(-2)
@@ -302,9 +297,6 @@ module.exports = async (req, res) => {
       .replace(/\//g, '')
       .trim()
 
-    // =========================
-    // VENDOR
-    // =========================
     const producerBlock = $('rz-product-producer').first()
 
     let vendor = ''
@@ -319,27 +311,16 @@ module.exports = async (req, res) => {
       }
     }
 
-    // =========================
-    // IMAGES
-    // =========================
     const images = []
 
     $('.thumbnail-button__picture').each((_, el) => {
       const src = $(el).attr('src')
 
-      if (
-        src &&
-        !src.includes('placeholder') &&
-        !src.includes('1x1') &&
-        !src.startsWith('data:')
-      ) {
+      if (src && !src.startsWith('data:')) {
         images.push(src.replace('/medium/', '/original/'))
       }
     })
 
-    // =========================
-    // PARAMETERS
-    // =========================
     const params = []
 
     $('.group .item').each((_, el) => {
@@ -358,16 +339,10 @@ module.exports = async (req, res) => {
       }
 
       if (label && values.length) {
-        params.push({
-          label,
-          value: values.join(', ')
-        })
+        params.push({ label, value: values.join(', ') })
       }
     })
 
-    // =========================
-    // RESPONSE
-    // =========================
     return res.status(200).json({
       title,
       price,
@@ -379,10 +354,10 @@ module.exports = async (req, res) => {
     })
 
   } catch (e) {
-    console.log('ERROR:', e.message)
+    console.log('FATAL ERROR:', e)
 
     return res.status(500).json({
-      error: e.message
+      error: e.message || 'Unknown error'
     })
   }
 }
