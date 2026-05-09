@@ -12,14 +12,7 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.post('/', async (req, res) => {
-  console.log('POST HIT')
 
-  return res.json({
-    success: true,
-    test: 'WORKING'
-  })
-})
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -189,7 +182,7 @@ $('.thumbnail-button__picture').each((i, el) => {
     res.status(500).json({ error: e.message })
     }
 })
-
+/* 
 app.post('/contact', async (req, res) => {
   try {
     const { email, message } = req.body
@@ -224,7 +217,7 @@ app.post('/contact', async (req, res) => {
           })
     }
 })
-
+ */
 const serverless = require('serverless-http')
 
 module.exports = serverless(app)
